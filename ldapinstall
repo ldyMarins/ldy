@@ -1,0 +1,493 @@
+find / -name openldap* //这是自带的，但并没有Server和Clent
+#yum 安装
+yum install openldap-servers openldap-client(centos7..openldap-clients)
+openldap-devel
+......................
+cp /usr/share/openldap-servers/slapd.conf.obsolete /etc/openlda
+p/slapd.conf
+cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/
+DB_CONFIG
+mv /etc/openldap/slapd.d{,.bak} //............
+....LDAP..........
+# slappasswd
+[root@s2 ~]# slappasswd
+New password:
+Re-enter new password:
+{SSHA}EhkJjZC5d/5AjkZoEg1d7dL18eiN8l
+............
+# vim /etc/openldap/slapd.conf
+......
+suffix "dc=example,dc=com"
+rootdn "cn=Manager,dc=example,dc=com"
+# CentOS6.5..........
+OpenLDAP....
+...........
+.................
+.......
+rootpw {SSHA}/eFNF8JMECmw/6WDLO0Vc/r6hkW87jgs
+......rootpw.... ....tab................
+database monitor
+access to *
+by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=ext
+ernal,cn=auth" read
+by dn.exact="cn=Manager,dc=example,dc=com" read
+by * none
+........
+[root@s2 ~]# chown -R ldap.ldap /etc/openldap/*
+[root@s2 ~]# chown -R ldap.ldap /var/lib/ldap/*
+....
+[root@s2 ~]# service slapd status
+slapd is stopped
+[root@s2 ~]# service slapd start
+Starting slapd: [ O
+K ]
+[root@s2 ~]# chkconfig slapd on
+..................
+slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d
+....config file testing succeeded,............
+................................
+# chown -R ldap.ldap /etc/openldap/slapd.d
+# service slapd restart
+................................
+# useradd ldapuser1
+# passwd ldapuser1
+12345
+............................................/etc/passwd../etc/shadow
+..............LDAP................................LDAP..........
+LDAP...................... ........ldif................................
+......../etc/passwd../etc/shadow.. ....migrationtools..................
+........LDAP..............
+....
+# yum install migrationtools
+....
+....migrationtool........
+# cd /usr/share/migrationtools/
+........migrate_common.ph:
+# vim migrate_common.ph
+......................70....
+70 # Default DNS domain
+71 $DEFAULT_MAIL_DOMAIN = "padl.com";
+72
+73 # Default base
+74 $DEFAULT_BASE = "dc=padl,dc=com";
+........
+70 # Default DNS domain
+71 $DEFAULT_MAIL_DOMAIN = "example.com";
+72
+73 # Default base
+74 $DEFAULT_BASE = "dc=example,dc=com";
+......................
+........pl....../etc/passwd ../etc/shadow....LDAP....................
+..../tmp/..:
+1.................
+yum install openldap-servers
+yum install openldap-clients
+...........migrationtools
+yum install openssh-ldap
+yum install openldap-devel
+2.............
+cd /etc/openldap/
+cp /usr/share/openldap-servers/slapd.conf.obsolete slapd.conf
+cd /etc/openldap/
+cp slapd.conf slapd.conf.bak
+slappasswd
+3.............
+vim /etc/openldap/slapd.conf
+database monitor
+access to *
+by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=ext
+ernal,cn=auth" read
+by dn.exact="cn=Manager,dc=example,dc=com" read
+by * none
+database bdb
+suffix "dc=example,dc=com"
+checkpoint 1024 15
+rootdn "cn=Manager,dc=example,dc=com"
+# Cleartext passwords, especially for the rootdn, should
+# be avoided. See slappasswd(8) and slapd.conf(5) for details.
+# Use of strong authentication encouraged.
+# rootpw secret
+# rootpw {crypt}ijFYNcSNctBYg
+rootpw {SSHA}EhkJjZC5dQq/5AjkZoEg1d7dL18eiN8l
+........{SSHA}xXQ8Xocn3yJ2XZk/UXv48YFgJ6K/4Z
+4.....DB..........
+cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/
+DB_CONFIG
+rm -rf /etc/openldap/slapd.d/*
+service slapd start
+service slapd restart
+5.....
+chown -R ldap.ldap /var/lib/ldap/
+chown -R ldap.ldap /etc/openldap/
+slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d
+ls /etc/openldap/slapd.d/
+useradd ldapuser1
+passwd ldapuser1
+/etc/init.d/slapd restart
+chown -R ldap.ldap /etc/openldap/
+chown -R ldap.ldap /var/lib/ldap/
+/etc/init.d/slapd restart
+6.....migrationtools
+yum install migrationtools
+............
+cd /usr/share/migrationtools/
+vim migrate_common.ph
+# Default DNS domain
+$DEFAULT_MAIL_DOMAIN = "example.com";
+# Default base
+$DEFAULT_BASE = "dc=example,dc=com";
+7.....
+ls
+./migrate_base.pl > /tmp/base.ldif
+ls /tmp/
+./migrate_passwd.pl /etc/passwd > /tmp/passwd.ldif
+./migrate_group.pl /etc/group > /tmp/group.ldif
+ldapadd -x -D "cn=Manager,dc=example,dc=com" -W -f /tmp/base.
+ldif
+ldapadd -x -D "cn=admin,dc=example,dc=com" -W -f /tmp/passwd.
+ldif
+ldapadd -x -D "cn=Manager,dc=example,dc=com" -W -f /tmp/passw
+d.ldif
+ldapadd -x -D "cn=Manager,dc=example,dc=com" -W -f /tmp/group
+.ldif
+/etc/init.d/slapd restart
+8.........
+yum install ngs*
+yum install nfs*
+vim /etc/exports
+/home/ldapuser1 *(rw,no_root_squash)
+/etc/init.d/rpcbind restart
+/etc/init.d/nfs restart
+9.....phpldapadmin
+yum install php
+yum install httpd
+yum isntall phpldapadmin
+vim /etc/httpd/conf.d/phpldapadmin.conf
+<Directory /usr/share/phpldapadmin/htdocs>
+# Order Deny,Allow
+# Deny from all
+# Allow from 127.0.0.1
+# Allow from ::1
+Allow from all
+</Directory>
+# vim /etc/phpldapadmin/config.php
+$servers->setValue('login','attr','dn');
+//$servers->setValue('login','attr','uid');
+....httpd......ip/phpldapadmin
+10...phpadmin....sudo....
+.... /usr/share/phpldapadmin/templates/creation/sudo.xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE template SYSTEM "template.dtd">
+<template>
+<title>Sudo Policy</title>
+<regexp>^ou=sudoers,dc=.*</regexp>
+<icon>images/door.png</icon>
+<description>New Sudo Policy</description>
+<askcontainer>1</askcontainer>
+<rdn>cn</rdn>
+<visible>1</visible>
+<objectClasses>
+<objectClass id="sudoRole"></objectClass>
+</objectClasses>
+<attributes>
+<attribute id="cn">
+<display>Policy Name</display>
+<order>1</order>
+<page>1</page>
+</attribute>
+<attribute id="sudoCommand">
+<display>Sudo Command</display>
+<order>2</order>
+<page>1</page>
+<spacer>1</spacer>
+</attribute>
+<attribute id="sudoUser">
+<display>Sudo Users</display>
+<option>=php.MultiList(/,(objectClass=posixAccount)
+,uid,%uid%
+(%cn%),sudoUser)</option>
+<order>3</order>
+<page>1</page>
+<spacer>1</spacer>
+</attribute>
+<attribute id="sudoHost">
+<display>Sudo Hosts</display>
+<array>10</array>
+<order>3</order>
+<page>1</page>
+<spacer>1</spacer>
+</attribute>
+<attribute id="description">
+<type>textarea</type>
+<display>Description</display>
+<order>4</order>
+<page>1</page>
+</attribute>
+</attributes>
+</template>
+............/usr/share/phpldapadmin/templates/modification/sudo.xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE template SYSTEM "template.dtd">
+<template>
+<title>Sudo Policy</title>
+<regexp>^cn=.*,ou=sudoers,dc=.*</regexp>
+<icon>images/door.png</icon>
+<description>Sudo Policy</description>
+<askcontainer>1</askcontainer>
+<rdn>cn</rdn>
+<visible>1</visible>
+<objectClasses>
+<objectClass id="sudoRole"></objectClass>
+</objectClasses>
+<attributes>
+<attribute id="cn">
+<display>Policy Name</display>
+<order>1</order>
+<page>1</page>
+</attribute>
+<attribute id="sudoCommand">
+<display>Sudo Command</display>
+<order>2</order>
+<page>1</page>
+<spacer>1</spacer>
+</attribute>
+<attribute id="sudoUser">
+<display>Sudo Users</display>
+<order>3</order>
+<page>1</page>
+<spacer>1</spacer>
+</attribute>
+<attribute id="sudoHost">
+<display>Sudo Hosts</display>
+<!-- <array>10</array> -->
+<order>3</order>
+<page>1</page>
+<spacer>1</spacer>
+</attribute>
+<attribute id="description">
+<type>textarea</type>
+<display>Description</display>
+<order>4</order>
+<page>1</page>
+<cols>200</cols>
+<rows>10</rows>
+</attribute>
+</attributes>
+</template>
+.... phpldapadmin ................ phpldapadmin ............
+ou=sudoers ........................................
+11.
+ldapmodify -Q -Y EXTERNAL -H ldapi:/// <<EOF
+dn: olcDatabase={2}bdb,cn=config
+changetype: modify
+add: olcAccess
+olcAccess: {0}to attrs=userPassword by self write by
+dn.base="cn=Manager,dc=example,dc=com" write by anonymous auth by *
+none
+olcAccess: {1}to * by dn.base="cn=Manager,dc=example,dc=com" write by
+self write by * read"
+EOF
+12 yum install openldap-servers
+13 yum install openldap-clients
+14 yum install openssh-ldap
+15 yum install openldap-devel
+16 cd /etc/openldap/
+17 ls
+18 cp /usr/share/openldap-servers/slapd.conf.obsolete slapd
+.conf
+19 cd /etc/openldap/
+20 ls
+21 cp slapd.conf slapd.conf.bak
+22 slappasswd
+23 vim /etc/openldap/slapd.conf
+24 cp /usr/share/openldap-servers/DB_CONFIG.example /var/li
+b/ldap/DB_CONFIG
+25 rm -rf /etc/openldap/slapd.d/*
+26 service slapd start
+27 service slapd restart
+28 chown -R ldap.ldap /var/lib/ldap/
+29 chown -R ldap.ldap /etc/openldap/
+30 slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/s
+lapd.d
+31 chown -R ldap.ldap /etc/openldap/
+32 chown -R ldap.ldap /var/lib/ldap/
+33 service slapd restart
+34 useradd ldapuser1
+35 passwd ldapuser1
+36 yum install migrationtools
+37 ldapmodify -Q -Y EXTERNAL -H ldapi:/// <<EOF
+38 dn: olcDatabase={2}bdb,cn=config
+39 changetype: modify
+40 add: olcAccess
+41 olcAccess: {0}to attrs=userPassword by self write by dn.
+base="cn=Manager,dc=example,dc=com" write by anonymous auth by
+* none
+42 olcAccess: {1}to * by dn.base="cn=Manager,dc=example,dc=
+com" write by self write by * read"
+43 EOF
+44 cd /usr/share/migrationtools/
+45 ls
+46 vim migrate_common.ph
+47 ./migrate_base.pl > /tmp/base.ldif
+48 ./migrate_passwd.pl /etc/passwd > /tmp/passwd.ldif
+49 ./migrate_group.pl /etc/group > /tmp/group.ldif
+50 ldapadd -x -D "cn=admin,dc=example,dc=com" -W -f /tmp/ba
+se.ldif
+51 ldapadd -x -D "cn=Manager,dc=example,dc=com" -W -f /tmp/
+base.ldif
+52 ldapadd -x -D "cn=Manager,dc=example,dc=com" -W -f /tmp/
+passwd.ldif
+53 ldapadd -x -D "cn=Manager,dc=example,dc=com" -W -f /tmp/
+group.ldif
+54 service slapd restart
+55 yum install nfs*
+56 vim /etc/exports
+57 /etc/init.d/rpcbind restart
+58 vim /etc/rsyslog.conf
+59 /etc/init.d/rsyslog restart
+60 chkconfig rpcbind on
+61 /etc/init.d/nfs restart
+62 chkconfig nfs on
+63 ls -la /etc/openldap/slapd.d/cn\=config/cn\=schema
+64 rpm -qal | grep sudo
+65 cp /usr/share/doc/sudo-1.8.6p3/schema.OpenLDAP /etc/open
+ldap/schema/sudo.schema
+66 cp /usr/share/doc/openssh-ldap-5.3p1/openssh-lpk-openlda
+p.schema /etc/openldap/schema/
+67 cp /usr/share/doc/openssh-ldap-5.3p1/openssh-lpk-openlda
+p.schema /etc/openldap/schema
+68 vim /tmp/schema_convert.conf
+69 cd /tmp/
+70 ls
+71 slaptest -f schema_convert.conf -F /etc/openldap/slapd.d
+/
+72 chown -Rf ldap.ldap /etc/openldap/slapd.d/
+73 service slapd restart
+74 cd
+75 yum install httpd
+76 yum install php
+77 yum install php-ldap
+78 yum install phpldapadmin
+79 vim /etc/httpd/conf.d/phpldapadmin.conf
+80 vim /etc/phpldapadmin/config.php
+81 /etc/init.d/httpd restart
+82 chkconfig httpd on
+83 ip a
+84 vim /usr/share/phpldapadmin/templates/creation/sudo.xml
+85 ip a
+86 ls
+87 mv /home/reckful88/sudo.xml /usr/share/phpldapadmin/temp
+lates/creation/
+88 ls /home/reckful88/
+89 mv /home/reckful88/sudo.xml /usr/share/phpldapadmin/temp
+lates/modification/
+90 ls
+91 ls -l /usr/share/phpldapadmin/templates/creation/
+92 chown root.root /usr/share/phpldapadmin/templates/creati
+on/sudo.xml
+93 ls -l /usr/share/phpldapadmin/templates/modification/
+94 chown root.root /usr/share/phpldapadmin/templates/modifi
+cation/
+95 ls
+96 ls -l /usr/share/phpldapadmin/templates/modification/
+97 ls -l /usr/share/phpldapadmin/templates/modification/sud
+o.xml
+98 ls -l /usr/share/phpldapadmin/templates/modification/
+99 chown root.root /usr/share/phpldapadmin/templates/modifi
+cation/sudo.xml
+100 ls -l /usr/share/phpldapadmin/templates/modification/sud
+o.xml
+101 chown root.root /usr/share/phpldapadmin/templates/creati
+on/sudo.xml
+102 ls -l /usr/share/phpldapadmin/templates/creation/
+103 yum install nss-pam-ldapd
+104 yum install zsh
+105 setup
+106 yum install nss-pam-ldapd
+107 yum install mysql-server
+108 yum install nss-pam-ldapd
+109 vim /etc/yum.conf
+110 yum clean all
+111 yum repolist
+112 yum install nss-pam-ldapd
+113 ip a
+114 setup
+115 yum install oddjob-mkhomedir oddjob
+116 chkconfig oddjobd on
+117 service messagebus start
+118 service oddjobd start
+119 authconfig --enablemkhomedir --update
+120 yum install openssh=ldap
+121 cp /usr/share/doc/openssh-ldap-5.3p1/ldap.conf /etc/ssh
+122 vim /etc/ssh/sshd_config
+123 service sshd restart
+124 ip a
+125 vim /etc/sudo-ldap.conf
+126 vim /etc/nsswitch.conf
+127 /etc/init.d/slapd restart
+128 ip a
+129 vim /etc/nsswitch.conf
+130 vim /etc/sysconfig/authconfig
+131 ls
+132 ps -ef |grep java
+133 top
+134 ls
+135 pwd
+136 ls
+137 ls /home/
+138 ls /home/users/
+139 ls /home/goods/
+140 top
+141 /sbin/ifconfig
+142 ps -ef |grep slapd
+143 pwd
+144 ls
+145 cd /etc/openldap/
+146 ls
+147 ls schema/
+148 cd schema/
+149 ls
+150 vi java.ldif
+151 pwd
+152 ls
+153 exit
+154 ip a
+155 ls /home/users/test/
+156 ls /home/users/
+157 exit
+158 ls
+159 w
+160 vim /etc/nsswitch.conf
+161 ls
+162 cd
+163 ls
+164 cat .ssh/authorized_keys
+165 ip a
+166 ls /etc/openldap/schema/core.schema
+167 cat /etc/openldap/schema/core.schema
+168 find / -name ldif
+169 find / -name *.ldif
+170 cd /etc/openldap/schema/
+171 ls
+172 cat openldap.ldif
+173 vim openldap.ldif
+174 netstat -tnulp | grep slaod
+175 netstat -tnulp
+176 ip a
+177 cat /etc/passwd
+178 mkdir /home/users/test/.ssh
+179 vim /home/users/test/.ssh/authorized_keys
+180 ll .ssh/
+181 ll .ssh
+182 ll .
+183 ll
+184 ls -la
+185 ls -l /home/users/
+186 ls -l /home/users/test/
+187 ls -la /home/users/test/
+188 ls -la /home/users/test/.ssh/
+189 ip a
+190 mkdir /home/users/fangcheng/.ssh
+191 vim /home/users/fangcheng/.ssh/authorized_keys
+192 ls
+193 history
